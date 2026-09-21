@@ -8,7 +8,7 @@
       "name": "tamaclaude",
       "source": "./tamaclaude",
       "description": "A pixel pet above the Claude Code prompt that reacts to your session",
-      "version": "0.0.0"
+      "version": "0.1.0"
     }
   ],
   "description": "tamaclaude: a pixel pet that lives above the Claude Code prompt"
