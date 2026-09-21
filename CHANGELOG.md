@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.2 — 2026-09-21
+- the pet sits at the right edge of the band, text to its left
+
 ## 0.2.1 — 2026-09-21
 - fix: the band composes with the plugins beneath (next(e)) instead of replacing them
 
