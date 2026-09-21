@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.3 — 2026-09-21
+- the egg hops on Write/Edit too
+
 ## 0.2.2 — 2026-09-21
 - the pet sits at the right edge of the band, text to its left
 
