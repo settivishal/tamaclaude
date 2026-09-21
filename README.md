@@ -47,7 +47,7 @@ asleep              hungry              sulking             dancing
 
 ## What it reacts to
 
-- `Write` / `Edit` → hops once (the egg too)
+- `Write` / `Edit` → hops for 1.5 s (the egg too)
 - a test runner in `Bash` (pytest, jest, vitest, cargo test, go test, npm test, …) that comes back clean → a happy dance when the turn ends; `FAIL` / `error` in its output → sulks
 - a tool call another plugin denies, or a turn that ends in a refusal → sulks 30 s
 - a streak of clean turns → it grows (see stages); an aborted, errored or refused turn resets the streak, never the stage
