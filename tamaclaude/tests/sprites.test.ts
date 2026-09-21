@@ -23,7 +23,8 @@ console.log("ok sprites");
 // every non-egg stage has its own normal-size art for every mood; the egg only wobbles
 for (const stage of ["hatchling", "adult", "elder"] as Stage[]) for (const mood of MOODS)
   eq(sprite("normal", stage, mood, 0) !== sprite("normal", "egg", "idle", 0), true, `${stage} ${mood} has art`);
-for (const mood of ["hop", "dance", "sulk", "yawn"] as Mood[])
+for (const mood of ["dance", "sulk", "yawn"] as Mood[])
   eq(sprite("normal", "egg", mood, 0), sprite("normal", "egg", "idle", 0), `egg ${mood} wobbles`);
+eq(sprite("normal", "egg", "hop", 0) !== sprite("normal", "egg", "idle", 0), true, "egg hops");
 eq(sprite("small", "elder", "dance", 0), sprite("small", "hatchling", "dance", 0), "small elder reuses hatchling art");
 console.log("ok sprites stages");

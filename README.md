@@ -47,7 +47,7 @@ asleep              hungry              sulking             dancing
 
 ## What it reacts to
 
-- `Write` / `Edit` → hops once
+- `Write` / `Edit` → hops once (the egg too)
 - a test runner in `Bash` (pytest, jest, vitest, cargo test, go test, npm test, …) that comes back clean → a happy dance when the turn ends; `FAIL` / `error` in its output → sulks
 - a tool call another plugin denies, or a turn that ends in a refusal → sulks 30 s
 - a streak of clean turns → it grows (see stages); an aborted, errored or refused turn resets the streak, never the stage
@@ -85,3 +85,5 @@ for t in tamaclaude/tests/*.test.ts; do npx -y tsx "$t"; done
 ```
 
 Sprites are plain strings in `tamaclaude/hooks/sprites.ts`, one char per cell; add a mood or stage there.
+
+Two plugins drawing the band? Each `AbovePrompt` hook must `await next(e)` and stack the result, or the outer one hides the rest.
