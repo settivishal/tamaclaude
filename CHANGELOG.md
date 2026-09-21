@@ -1,5 +1,7 @@
 # Changelog
 
+Newest first. Released with `scripts/release.sh`.
+
 ## 0.2.3 — 2026-09-21
 - the egg hops on Write/Edit too
 

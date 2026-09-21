@@ -45,7 +45,7 @@ export const isHungry = (pet: Pet, now: number) => now - pet.fed > HUNGRY_MS;
 
 // transient effects the session sets, each an expiry
 export type Effects = { hop?: number; dance?: number; sulk?: number; yawn?: number };
-export const EFFECT_MS = { hop: 600, dance: 3000, sulk: 30_000, yawn: 2500 };
+export const EFFECT_MS = { hop: 1500, dance: 3000, sulk: 30_000, yawn: 2500 };
 
 export type MoodInput = { effects: Effects; lastTurn: number; sleepAfterMs: number; hungry: boolean; quiet: boolean };
 
