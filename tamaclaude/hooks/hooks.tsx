@@ -142,16 +142,16 @@ export const register: Register = (on, options) => {
     const hungry = m === "hungry";
     return (
       <Box key="tama" flexDirection="column">
-        <Box gap={1}>
-          <Raster key="pet" columns={columns} rows={rows} cells={frame(m, tick)} />
+        <Box gap={1} justifyContent="flex-end">
           <Box flexDirection="column" justifyContent="flex-end">
             <Box gap={1}>
               <Text dimColor wrap="truncate">{`${pet.name} · ${pet.stage} · ${MOOD_LABEL[m]} · streak ${pet.streak}`}</Text>
               <Button key="feed" plain dimColor={!hungry} hotkey="9" onPress={() => void feed($)}>feed</Button>
             </Box>
           </Box>
+          <Raster key="pet" columns={columns} rows={rows} cells={frame(m, tick)} />
         </Box>
-        <Box display="none" hover={{ display: "flex" }} paddingLeft={columns + 1}>
+        <Box display="none" hover={{ display: "flex" }} justifyContent="flex-end" paddingRight={columns + 1}>
           <Text dimColor wrap="truncate">{`${pet.sessions} sessions · ${pet.edits} edits · ${pet.tests} tests · ${pet.sulks} sulks · /tamaclaude`}</Text>
         </Box>
         {below}
