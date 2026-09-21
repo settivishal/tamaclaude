@@ -132,9 +132,10 @@ export const register: Register = (on, options) => {
     return r;
   });
 
-  on("ui.render", { component: "AbovePrompt" }, ($, e, next) => {
+  on("ui.render", { component: "AbovePrompt" }, async ($, e, next) => {
     if (!cfg.enabled || e.props.hasSurvey || e.surface !== "terminal") return next(e); // Raster is terminal-only
     const { Box, Text, Button, Raster } = $.ui.resolve(e);
+    const below = await next(e); // the other plugins' band rows stack under the pet
     bandId = e.requestId;
     const m = drawnMood;
     const { columns, rows } = DIMS[cfg.size];
@@ -153,6 +154,7 @@ export const register: Register = (on, options) => {
         <Box display="none" hover={{ display: "flex" }} paddingLeft={columns + 1}>
           <Text dimColor wrap="truncate">{`${pet.sessions} sessions · ${pet.edits} edits · ${pet.tests} tests · ${pet.sulks} sulks · /tamaclaude`}</Text>
         </Box>
+        {below}
       </Box>
     );
   });
