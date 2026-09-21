@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
   "name": "tamaclaude",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A pixel pet above the Claude Code prompt that reacts to your session",
   "author": {
     "name": "Vishal K Setti",

@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.1 — 2026-09-21
+- fix: the band composes with the plugins beneath (next(e)) instead of replacing them
+
 ## 0.2.0 — 2026-09-21
 - adult and elder stages; it grows on a streak of clean turns, kept across sessions
 - happy dance when a test run comes back clean; sulks on FAIL/error, a denied tool call or a refusal
