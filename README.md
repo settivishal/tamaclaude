@@ -26,21 +26,33 @@ It grows on a streak of clean turns (no abort, no refusal, no error). A stage on
 |---|---|---|---|
 | egg | 0 | beige | see below |
 | hatchling | 5 | yellow | see below |
-| adult | 30 | green | (0.2) |
-| elder | 100 | purple | (0.2) |
+| adult | 30 | green | see below |
+| elder | 100 | purple | see below |
 
 ```
-egg                 hatchling           asleep              hungry
-      ▄████▄             ▄████▄              ▄████▄  z           ▄████▄
-     ██████████         █ ●  ● █            █ ─  ─ █           █ ●  ● █
-     ██████████         █  ◡   █            █  ◡   █           █  ∩   █
-      ▀██████▀           ▀████▀              ▀████▀             ▀████▀
+egg                 hatchling           adult               elder
+      ▄████▄             ▄████▄            ▄██████▄            ▄█▀██▀█▄
+     ██████████         █ ●  ● █          █ ●    ● █          █ ●    ● █
+     ██████████         █  ◡   █         ▐█   ◡    █▌        ▐█   ◡    █▌
+      ▀██████▀           ▀████▀            ▀██████▀            ▀█▒▒▒▒█▀
+
+asleep              hungry              sulking             dancing
+     ▄████▄  z           ▄████▄              ▄████▄            ▘▄████▄▝
+    █ ─  ─ █            █ ●  ● █            █ ╥  ╥ █           █ ●  ● █
+    █  ◡   █            █  ∩   █            █ ' ∩  █           █  ◡   █
+     ▀████▀              ▀████▀              ▀████▀             ▀████▀
 ```
+
+`small` (8×2) draws the hatchling art for every stage, told apart by colour.
 
 ## What it reacts to
 
 - `Write` / `Edit` → hops once
+- a test runner in `Bash` (pytest, jest, vitest, cargo test, go test, npm test, …) that comes back clean → a happy dance when the turn ends; `FAIL` / `error` in its output → sulks
+- a tool call another plugin denies, or a turn that ends in a refusal → sulks 30 s
+- a streak of clean turns → it grows (see stages); an aborted, errored or refused turn resets the streak, never the stage
 - no turn for 10 min (`Sleep after` setting) → sleeps; z's drift up; any prompt wakes it
+- a session past 2 h → yawns every few minutes
 - unfed for 24 h → droopy. It never dies. Press `9` with an empty prompt, or `/tamaclaude feed`
 - hover the pet for its stats: sessions, edits witnessed, tests seen, sulks
 

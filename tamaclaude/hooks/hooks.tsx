@@ -11,6 +11,13 @@ let lastTurn = 0;
 let bandId: string | undefined; // the AbovePrompt requestId the Raster is mounted under
 let tick = 0;
 let drawnMood: Mood = "idle";
+let sessionStart = 0;
+let lastYawn = 0;
+let testsPassed = false; // a test run this turn came back clean
+
+const TEST_RUNNER = /\b(pytest|jest|vitest|mocha|cargo test|go test|npm test|pnpm test|yarn test|bun test|tsx .*\.test\.|node --test|rspec|phpunit|mvn test|gradle test|dotnet test|make test)\b/;
+const TEST_FAIL = /\bFAIL(ED|URE)?\b|\berror\b/i;
+const LONG_SESSION_MS = 2 * 60 * 60 * 1000, YAWN_EVERY_MS = 4 * 60 * 1000;
 
 const MOOD_LABEL: Record<Mood, string> = { idle: "content", hop: "excited", dance: "dancing", sulk: "sulking", sleep: "asleep", yawn: "yawning", hungry: "hungry" };
 
@@ -39,8 +46,15 @@ async function feed($: EngineInterface): Promise<string> {
   return `${pet.name} munches happily.`;
 }
 
+async function sulk($: EngineInterface, now: number): Promise<void> {
+  poke("sulk", now);
+  pet = { ...pet, sulks: pet.sulks + 1 };
+  await save($);
+}
+
 async function step($: EngineInterface): Promise<void> {
   const now = await $.clock.now();
+  if (now - sessionStart >= LONG_SESSION_MS && now - lastYawn >= YAWN_EVERY_MS) { lastYawn = now; poke("yawn", now); }
   const m = currentMood(now);
   tick++;
   if (m !== drawnMood) { drawnMood = m; $.ui.invalidate("ui.render"); return; } // text line changes with the mood
@@ -80,7 +94,7 @@ export const register: Register = (on, options) => {
     const now = await $.clock.now();
     pet = load(await $.store.get("pet"), now);
     pet = { ...pet, sessions: pet.sessions + 1 };
-    lastTurn = now;
+    lastTurn = sessionStart = lastYawn = now;
     await save($);
     await $.command.register({ name: "tamaclaude", description: "Your pixel pet: status, feed, name <x>, reset.", argumentHint: "[feed|name <x>|reset]" });
     if (cfg.enabled) $.clock.every(250, () => void step($));
@@ -90,10 +104,33 @@ export const register: Register = (on, options) => {
   on("command.run", { command: "tamaclaude" }, async ($, e) => ({ text: await command($, e.args) }));
 
   on("prompt.submit", async ($, e, next) => { lastTurn = await $.clock.now(); return next(e); });
-  on("turn.complete", async ($, e, next) => { lastTurn = await $.clock.now(); return next(e); });
+  on("turn.complete", async ($, e, next) => {
+    const now = lastTurn = await $.clock.now();
+    if (e.agentId) return next(e); // subagent turns do not count
+    if (e.reason === "refusal") await sulk($, now);
+    else if (e.reason === "answer" && testsPassed) poke("dance", now);
+    testsPassed = false;
+    const before = pet.stage;
+    pet = grow({ ...pet, streak: e.reason === "answer" ? pet.streak + 1 : 0 });
+    if (pet.stage !== before) $.ui.toast(`${pet.name} grew into ${pet.stage === "hatchling" ? "a hatchling" : `an ${pet.stage}`}!`);
+    await save($);
+    $.ui.invalidate("ui.render"); // streak shows on the text line
+    return next(e);
+  });
 
-  on("tool.call", { tool: "Write" }, async ($, e, next) => { poke("hop", await $.clock.now()); pet = { ...pet, edits: pet.edits + 1 }; return next(e); });
-  on("tool.call", { tool: "Edit" }, async ($, e, next) => { poke("hop", await $.clock.now()); pet = { ...pet, edits: pet.edits + 1 }; return next(e); });
+  on("tool.call", async ($, e, next) => {
+    const now = await $.clock.now();
+    const isTest = e.tool === "Bash" && TEST_RUNNER.test(e.command);
+    if (e.tool === "Write" || e.tool === "Edit") { poke("hop", now); pet = { ...pet, edits: pet.edits + 1 }; }
+    if (isTest) pet = { ...pet, tests: pet.tests + 1 };
+    const r = await next(e);
+    if (r.deny !== undefined) await sulk($, await $.clock.now()); // a plugin beneath refused it
+    else if (isTest) {
+      if (r.isError || TEST_FAIL.test(r.text ?? "")) await sulk($, await $.clock.now());
+      else testsPassed = true;
+    }
+    return r;
+  });
 
   on("ui.render", { component: "AbovePrompt" }, ($, e, next) => {
     if (!cfg.enabled || e.props.hasSurvey || e.surface !== "terminal") return next(e); // Raster is terminal-only
