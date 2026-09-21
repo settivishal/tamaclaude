@@ -1,0 +1,39 @@
+{
+  "$schema": "https://anthropic.com/claude-code/plugin.schema.json",
+  "name": "tamaclaude",
+  "version": "0.0.0",
+  "description": "A pixel pet above the Claude Code prompt that reacts to your session",
+  "author": {
+    "name": "Vishal K Setti",
+    "email": "vishalsetti2000@gmail.com"
+  },
+  "userConfig": {
+    "enabled": {
+      "type": "boolean",
+      "title": "Enabled",
+      "description": "Off hides the pet.",
+      "default": true
+    },
+    "size": {
+      "type": "string",
+      "title": "Size",
+      "description": "small is 8×2 cells, normal 16×4.",
+      "options": ["small", "normal"],
+      "default": "normal"
+    },
+    "sleepAfterMin": {
+      "type": "number",
+      "title": "Sleep after (min)",
+      "description": "Minutes without a turn before the pet falls asleep. Any prompt wakes it.",
+      "default": 10
+    },
+    "quiet": {
+      "type": "boolean",
+      "title": "Quiet",
+      "description": "No dance or yawn; only idle, hop and sleep.",
+      "default": false
+    }
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/settivishal/tamaclaude"
+}
