@@ -3,8 +3,6 @@
 ## 0.2.4 — 2026-09-21
 - hop lasts 1.5 s so you can see it
 
-Newest first. Released with `scripts/release.sh`.
-
 ## 0.2.3 — 2026-09-21
 - the egg hops on Write/Edit too
 
