@@ -103,6 +103,7 @@ async function command($: EngineInterface, args: string): Promise<string> {
   if (verb === "reset") {
     pet = hatch(now);
     effects = {};
+    said = { text: "", until: 0 };
     await save($);
     $.ui.invalidate("ui.render");
     return `A new egg. Say hi to ${pet.name}.`;
@@ -166,10 +167,11 @@ export const register: Register = (on, options) => {
     if (e.tool === "Write" || e.tool === "Edit") { poke("hop", now); turnEdits++; pet = { ...pet, edits: pet.edits + 1 }; }
     if (isTest) pet = { ...pet, tests: pet.tests + 1 };
     const r = await next(e);
-    if (r.deny !== undefined) await sulk($, await $.clock.now()); // a plugin beneath refused it
-    else if (e.tool === "Bash" && GIT_SHIP.test(e.command) && !r.isError) say("shipped!", await $.clock.now());
+    const after = await $.clock.now();
+    if (r.deny !== undefined) await sulk($, after); // a plugin beneath refused it
+    else if (e.tool === "Bash" && GIT_SHIP.test(e.command) && !r.isError) say("shipped!", after);
     else if (isTest) {
-      if (r.isError || TEST_FAIL.test(r.text ?? "")) await sulk($, await $.clock.now());
+      if (r.isError || TEST_FAIL.test(r.text ?? "")) await sulk($, after);
       else testsPassed = true;
     }
     return r;
