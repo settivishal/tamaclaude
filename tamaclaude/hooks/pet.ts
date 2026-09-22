@@ -67,6 +67,17 @@ export function mood(m: MoodInput, now: number): Mood {
 export const QUIP: Record<Mood, string> = { idle: "", hop: "ooh, an edit!", dance: "yay!", sulk: "...", sleep: "zzz", yawn: "long day, huh?", hungry: "feed me?", worry: "context's getting tight..." };
 export const CHATTER = ["hi.", "what are we building?", "ship it.", "did you commit?", "hydrate.", "i like this repo.", "tests are friends.", "*looks around*"];
 export const CHATTER_EVERY_MS = 5 * 60 * 1000, SAY_MS = 4000;
+export const LIMIT_PERCENT = 90; // rate-limit window fill it warns about, once per crossing
+export const LONG_TURN_MS = 5 * 60 * 1000, BUSY_EDITS = 8;
+
+// what it says when a main-loop turn ends; "" for nothing worth a word
+export function turnRemark(reason: string, durationMs: number, edits: number): string {
+  if (reason === "aborted") return "oh. ok.";
+  if (reason === "error") return "ouch.";
+  if (edits >= BUSY_EDITS) return "busy turn!";
+  if (durationMs >= LONG_TURN_MS) return "phew.";
+  return "";
+}
 
 // praise in a prompt: the pet dances
 export const PRAISE = /\b(thanks|thank you|good (job|work|bo[yt])|well done|nice work|great work|love (you|it))\b/i;

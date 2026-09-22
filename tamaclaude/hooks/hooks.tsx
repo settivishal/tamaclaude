@@ -1,6 +1,6 @@
 import type { EngineInterface, Register } from "claude-code";
 import { sprite, cells, DIMS, type Size, type Mood } from "./sprites.ts";
-import { hatch, load, grow, isHungry, mood, ageDays, EFFECT_MS, PRAISE, QUIP, CHATTER, CHATTER_EVERY_MS, SAY_MS, WORRY_PERCENT, type Pet, type Effects } from "./pet.ts";
+import { hatch, load, grow, isHungry, mood, ageDays, EFFECT_MS, PRAISE, QUIP, CHATTER, CHATTER_EVERY_MS, SAY_MS, WORRY_PERCENT, LIMIT_PERCENT, turnRemark, type Pet, type Effects } from "./pet.ts";
 
 type Cfg = { enabled: boolean; size: Size; sleepAfterMs: number; quiet: boolean };
 const cfg: Cfg = { enabled: true, size: "normal", sleepAfterMs: 600_000, quiet: false };
@@ -15,6 +15,8 @@ let sessionStart = 0;
 let lastYawn = 0;
 let testsPassed = false; // a test run this turn came back clean
 let ctxPercent = 0; // context fill from session.measure
+let limitWarned = false; // said its piece about the rate limit this crossing
+let turnEdits = 0; // Write/Edit calls this turn
 let said = { text: "", until: 0 }; // a line it spoke, over its quip
 let drawnLine = "";
 let lastChatter = 0;
@@ -38,8 +40,8 @@ function line(m: Mood, now: number): string {
   return said.until > now ? said.text : QUIP[m];
 }
 
-function say(text: string, now: number): void {
-  said = { text, until: now + SAY_MS };
+function say(text: string, now: number, ms = SAY_MS): void {
+  said = { text, until: now + ms };
 }
 
 function frame(m: Mood, t: number): string {
@@ -138,6 +140,9 @@ export const register: Register = (on, options) => {
     if (e.reason === "refusal") await sulk($, now);
     else if (e.reason === "answer" && testsPassed) poke("dance", now);
     testsPassed = false;
+    const remark = turnRemark(e.reason, e.durationMs, turnEdits);
+    if (remark) say(remark, now);
+    turnEdits = 0;
     const before = pet.stage;
     pet = grow({ ...pet, streak: e.reason === "answer" ? pet.streak + 1 : 0 });
     if (pet.stage !== before) $.ui.toast(`${pet.name} grew into ${pet.stage === "hatchling" ? "a hatchling" : `an ${pet.stage}`}!`);
@@ -146,12 +151,18 @@ export const register: Register = (on, options) => {
     return next(e);
   });
 
-  on("session.measure", ($, e, next) => { ctxPercent = e.context.percent ?? 0; return next(e); });
+  on("session.measure", async ($, e, next) => {
+    ctxPercent = e.context.percent ?? 0;
+    const limit = Math.max(0, ...e.rateLimits.map(r => r.percentUsed));
+    if (limit >= LIMIT_PERCENT && !limitWarned) say(`easy... ${Math.round(limit)}% of the limit's gone.`, await $.clock.now(), 8000);
+    limitWarned = limit >= LIMIT_PERCENT;
+    return next(e);
+  });
 
   on("tool.call", async ($, e, next) => {
     const now = await $.clock.now();
     const isTest = e.tool === "Bash" && TEST_RUNNER.test(e.command);
-    if (e.tool === "Write" || e.tool === "Edit") { poke("hop", now); pet = { ...pet, edits: pet.edits + 1 }; }
+    if (e.tool === "Write" || e.tool === "Edit") { poke("hop", now); turnEdits++; pet = { ...pet, edits: pet.edits + 1 }; }
     if (isTest) pet = { ...pet, tests: pet.tests + 1 };
     const r = await next(e);
     if (r.deny !== undefined) await sulk($, await $.clock.now()); // a plugin beneath refused it

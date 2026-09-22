@@ -53,7 +53,8 @@ asleep              hungry              sulking             dancing             
 - a streak of clean turns → it grows (see stages); an aborted, errored or refused turn resets the streak, never the stage
 - no turn for 10 min (`Sleep after` setting) → sleeps; z's drift up; any prompt wakes it
 - a session past 2 h → yawns every few minutes
-- context 85 % full → sweats and says so
+- context 85 % full → sweats and says so; a rate-limit window past 90 % → it warns you, once
+- a turn that was aborted, errored, ran 5 min or made 8+ edits → a word about it
 - unfed for 24 h → droopy. It never dies. Press `9` with an empty prompt, or `/tamaclaude feed`
 - `8` pets it → a dance (a hop under `quiet`); praise in a prompt (thanks, good job, well done) → a dance too
 - it talks: a line above its name for each mood, a word when fed, petted or praised, and some idle chatter every 5 min (`quiet` mutes the chatter)

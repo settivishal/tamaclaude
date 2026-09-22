@@ -1,4 +1,4 @@
-import { hatch, load, grow, mood, isHungry, THRESHOLDS, HUNGRY_MS, PRAISE, type Pet } from "../hooks/pet.ts";
+import { hatch, load, grow, mood, isHungry, THRESHOLDS, HUNGRY_MS, PRAISE, turnRemark, LONG_TURN_MS, BUSY_EDITS, type Pet } from "../hooks/pet.ts";
 const eq = (got: unknown, want: unknown, what: string) => {
   if (JSON.stringify(got) !== JSON.stringify(want)) throw new Error(`${what}\n got  ${JSON.stringify(got)}\n want ${JSON.stringify(want)}`);
 };
@@ -49,3 +49,10 @@ console.log("ok pet");
 // praise
 eq(PRAISE.test("thanks, good job"), true, "praise matches");
 eq(PRAISE.test("fix the thanksgiving bug"), false, "no praise in a word");
+
+// turn remarks
+eq(turnRemark("answer", 1000, 1), "", "plain turn says nothing");
+eq(turnRemark("aborted", 1000, BUSY_EDITS), "oh. ok.", "abort first");
+eq(turnRemark("error", LONG_TURN_MS, 0), "ouch.", "error");
+eq(turnRemark("answer", 1000, BUSY_EDITS), "busy turn!", "many edits");
+eq(turnRemark("answer", LONG_TURN_MS, 0), "phew.", "long turn");
