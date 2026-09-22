@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1 — 2026-09-21
+- says shipped! on a clean git commit/push or gh pr create/merge
+- fix: reset clears the speech line
+
 ## 0.5.0 — 2026-09-21
 - warns once when a rate-limit window passes 90%
 - a word when a turn is aborted, errors, runs 5 min or makes 8+ edits
