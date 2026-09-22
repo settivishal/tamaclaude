@@ -22,7 +22,7 @@ eq(isHungry(p, T0 + HUNGRY_MS + 1), true, "unfed past 24h");
 
 // mood table: [effects, msSinceTurn, hungry, quiet, want]
 const SLEEP = 600_000;
-const rows: [Record<string, number>, number, boolean, boolean, string][] = [
+const rows: [Record<string, number>, number, boolean, boolean, string, boolean?][] = [
   [{}, 0, false, false, "idle"],
   [{}, 0, true, false, "hungry"],
   [{}, SLEEP, true, false, "sleep"],
@@ -35,11 +35,14 @@ const rows: [Record<string, number>, number, boolean, boolean, string][] = [
   [{ yawn: 1 }, 0, false, false, "yawn"],
   [{ yawn: 1 }, 0, false, true, "idle"],
   [{ hop: -1 }, 0, false, false, "idle"],
+  [{}, 0, true, false, "worry", true],
+  [{}, SLEEP, false, false, "sleep", true],
+  [{ hop: 1 }, 0, false, false, "hop", true],
 ];
-for (const [fx, since, hungry, quiet, want] of rows) {
+for (const [fx, since, hungry, quiet, want, worried = false] of rows) {
   const now = T0 + since;
   const effects = Object.fromEntries(Object.entries(fx).map(([k, v]) => [k, now + v]));
-  eq(mood({ effects, lastTurn: T0, sleepAfterMs: SLEEP, hungry, quiet }, now), want, `mood ${JSON.stringify(fx)} since=${since} hungry=${hungry} quiet=${quiet}`);
+  eq(mood({ effects, lastTurn: T0, sleepAfterMs: SLEEP, hungry, quiet, worried }, now), want, `mood ${JSON.stringify(fx)} since=${since} hungry=${hungry} quiet=${quiet} worried=${worried}`);
 }
 console.log("ok pet");
 

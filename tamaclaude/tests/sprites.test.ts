@@ -3,7 +3,7 @@ const eq = (got: unknown, want: unknown, what: string) => {
   if (JSON.stringify(got) !== JSON.stringify(want)) throw new Error(`${what}\n got  ${JSON.stringify(got)}\n want ${JSON.stringify(want)}`);
 };
 const STAGES: Stage[] = ["egg", "hatchling", "adult", "elder"];
-const MOODS: Mood[] = ["idle", "hop", "dance", "sulk", "sleep", "yawn", "hungry"];
+const MOODS: Mood[] = ["idle", "hop", "dance", "sulk", "sleep", "yawn", "hungry", "worry"];
 const b64len = (n: number) => Math.ceil((n * 12) / 3) * 4;
 for (const size of ["small", "normal"] as Size[]) {
   const { columns, rows } = DIMS[size];
@@ -23,7 +23,7 @@ console.log("ok sprites");
 // every non-egg stage has its own normal-size art for every mood; the egg only wobbles
 for (const stage of ["hatchling", "adult", "elder"] as Stage[]) for (const mood of MOODS)
   eq(sprite("normal", stage, mood, 0) !== sprite("normal", "egg", "idle", 0), true, `${stage} ${mood} has art`);
-for (const mood of ["dance", "sulk", "yawn"] as Mood[])
+for (const mood of ["dance", "sulk", "yawn", "worry"] as Mood[])
   eq(sprite("normal", "egg", mood, 0), sprite("normal", "egg", "idle", 0), `egg ${mood} wobbles`);
 eq(sprite("normal", "egg", "hop", 0) !== sprite("normal", "egg", "idle", 0), true, "egg hops");
 eq(sprite("small", "elder", "dance", 0), sprite("small", "hatchling", "dance", 0), "small elder reuses hatchling art");

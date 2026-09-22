@@ -47,9 +47,10 @@ export const isHungry = (pet: Pet, now: number) => now - pet.fed > HUNGRY_MS;
 export type Effects = { hop?: number; dance?: number; sulk?: number; yawn?: number };
 export const EFFECT_MS = { hop: 1500, dance: 3000, sulk: 30_000, yawn: 2500 };
 
-export type MoodInput = { effects: Effects; lastTurn: number; sleepAfterMs: number; hungry: boolean; quiet: boolean };
+export const WORRY_PERCENT = 85; // context fill that worries it
+export type MoodInput = { effects: Effects; lastTurn: number; sleepAfterMs: number; hungry: boolean; quiet: boolean; worried: boolean };
 
-// priority: sulk > dance > hop > yawn > sleep > hungry > idle; quiet drops dance and yawn
+// priority: sulk > dance > hop > yawn > sleep > worry > hungry > idle; quiet drops dance and yawn
 export function mood(m: MoodInput, now: number): Mood {
   const on = (k: keyof Effects) => (m.effects[k] ?? 0) > now;
   if (on("sulk")) return "sulk";
@@ -57,9 +58,15 @@ export function mood(m: MoodInput, now: number): Mood {
   if (on("hop")) return "hop";
   if (!m.quiet && on("yawn")) return "yawn";
   if (now - m.lastTurn >= m.sleepAfterMs) return "sleep";
+  if (m.worried) return "worry";
   if (m.hungry) return "hungry";
   return "idle";
 }
+
+// what it says: a line per mood while the mood lasts, and idle chatter now and then
+export const QUIP: Record<Mood, string> = { idle: "", hop: "ooh, an edit!", dance: "yay!", sulk: "...", sleep: "zzz", yawn: "long day, huh?", hungry: "feed me?", worry: "context's getting tight..." };
+export const CHATTER = ["hi.", "what are we building?", "ship it.", "did you commit?", "hydrate.", "i like this repo.", "tests are friends.", "*looks around*"];
+export const CHATTER_EVERY_MS = 5 * 60 * 1000, SAY_MS = 4000;
 
 // praise in a prompt: the pet dances
 export const PRAISE = /\b(thanks|thank you|good (job|work|bo[yt])|well done|nice work|great work|love (you|it))\b/i;

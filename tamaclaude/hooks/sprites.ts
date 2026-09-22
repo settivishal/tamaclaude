@@ -1,58 +1,58 @@
 // Sprite data: one string per row, one char per cell. Pure; no $ here.
-// Glyphs: blocks are the body (stage colour); ● ─ eyes, ╥ crying, ◡ ∩ ○ mouths, ' a tear, z Z sleep, ▒ the elder's beard.
+// Glyphs: blocks are the body (stage colour); ● ─ eyes, ╥ crying, ◡ ∩ ○ ~ mouths, · cheeks, ' a tear or sweat, z Z sleep, ▒ egg speckles and the elder's beard.
 import { pack, DEFAULT, type Cell } from "./raster.ts";
 
 export type Stage = "egg" | "hatchling" | "adult" | "elder";
-export type Mood = "idle" | "hop" | "dance" | "sulk" | "sleep" | "yawn" | "hungry";
+export type Mood = "idle" | "hop" | "dance" | "sulk" | "sleep" | "yawn" | "hungry" | "worry";
 export type Size = "small" | "normal";
 export type Sprite = readonly string[];
 
 export const DIMS: Record<Size, { columns: number; rows: number }> = { small: { columns: 8, rows: 2 }, normal: { columns: 16, rows: 4 } };
 
 export const STAGE_COLOR: Record<Stage, number> = { egg: 0xf5deb3, hatchling: 0xfacc15, adult: 0x22c55e, elder: 0xa855f7 };
-const Z_COLOR = 0x60a5fa, TEAR = 0x38bdf8, EYE = DEFAULT;
+const Z_COLOR = 0x60a5fa, TEAR = 0x38bdf8, CHEEK = 0xf9a8d4, EYE = DEFAULT;
 
 // normal 16×4 — two frames per state; second frame is the blink / wobble / drift
 const N: Record<Stage, Partial<Record<Mood, [Sprite, Sprite]>>> = {
   egg: {
     idle: [
       ["      ▄████▄    ",
-       "     ██████████ ",
-       "     ██████████ ",
+       "     ██▒███████ ",
+       "     ██████▒███ ",
        "      ▀██████▀  "],
       ["       ▄████▄   ",
-       "      ██████████",
-       "      ██████████",
+       "      ██▒███████",
+       "      ██████▒███",
        "       ▀██████▀ "],
     ],
     hop: [
       ["     ██████████ ",
-       "     ██████████ ",
+       "     ██▒███████ ",
        "      ▀██████▀  ",
        "                "],
       ["      ▄████▄    ",
-       "     ██████████ ",
-       "     ██████████ ",
+       "     ██▒███████ ",
+       "     ██████▒███ ",
        "      ▀██████▀  "],
     ],
     sleep: [
       ["      ▄████▄  z ",
-       "     ██████████ ",
-       "     ██████████ ",
+       "     ██▒███████ ",
+       "     ██████▒███ ",
        "      ▀██████▀  "],
       ["      ▄████▄   Z",
-       "     ██████████ ",
-       "     ██████████ ",
+       "     ██▒███████ ",
+       "     ██████▒███ ",
        "      ▀██████▀  "],
     ],
     hungry: [
       ["      ▄████▄    ",
        "     ████  ████ ",
-       "     ██████████ ",
+       "     ██████▒███ ",
        "      ▀██████▀  "],
       ["      ▄████▄    ",
        "     ████  ████ ",
-       "     ██████████ ",
+       "     ██████▒███ ",
        "      ▀██████▀  "],
     ],
   },
@@ -60,21 +60,21 @@ const N: Record<Stage, Partial<Record<Mood, [Sprite, Sprite]>>> = {
     idle: [
       ["     ▄████▄     ",
        "    █ ●  ● █    ",
-       "    █  ◡   █    ",
+       "    █ ·◡ · █    ",
        "     ▀████▀     "],
       ["     ▄████▄     ",
        "    █ ─  ─ █    ",
-       "    █  ◡   █    ",
+       "    █ ·◡ · █    ",
        "     ▀████▀     "],
     ],
     hop: [
       ["    █ ●  ● █    ",
-       "    █  ◡   █    ",
+       "    █ ·◡ · █    ",
        "     ▀████▀     ",
        "                "],
       ["     ▄████▄     ",
        "    █ ●  ● █    ",
-       "    █  ◡   █    ",
+       "    █ ·◡ · █    ",
        "     ▀████▀     "],
     ],
     sleep: [
@@ -100,10 +100,10 @@ const N: Record<Stage, Partial<Record<Mood, [Sprite, Sprite]>>> = {
     dance: [
       ["    ▘▄████▄▝    ",
        "    █ ●  ● █    ",
-       "    █  ◡   █    ",
+       "    █ ·◡ · █    ",
        "     ▀████▀     "],
       ["    █ ●  ● █    ",
-       "   ▗█  ◡   █▖   ",
+       "   ▗█ ·◡ · █▖   ",
        "     ▀████▀     ",
        "                "],
     ],
@@ -127,36 +127,46 @@ const N: Record<Stage, Partial<Record<Mood, [Sprite, Sprite]>>> = {
        "    █  ◡   █    ",
        "     ▀████▀     "],
     ],
+    worry: [
+      ["     ▄████▄  '  ",
+       "    █ ●  ● █    ",
+       "    █  ~   █    ",
+       "     ▀████▀     "],
+      ["     ▄████▄     ",
+       "    █ ●  ● █ '  ",
+       "    █  ~   █    ",
+       "     ▀████▀     "],
+    ],
   },
   adult: {
     idle: [
       ["    ▄██████▄    ",
        "   █ ●    ● █   ",
-       "  ▐█   ◡    █▌  ",
+       "  ▐█ · ◡  · █▌  ",
        "    ▀██████▀    "],
       ["    ▄██████▄    ",
        "   █ ─    ─ █   ",
-       "  ▐█   ◡    █▌  ",
+       "  ▐█ · ◡  · █▌  ",
        "    ▀██████▀    "],
     ],
     hop: [
       ["   █ ●    ● █   ",
-       "  ▐█   ◡    █▌  ",
+       "  ▐█ · ◡  · █▌  ",
        "    ▀██████▀    ",
        "                "],
       ["    ▄██████▄    ",
        "   █ ●    ● █   ",
-       "  ▐█   ◡    █▌  ",
+       "  ▐█ · ◡  · █▌  ",
        "    ▀██████▀    "],
     ],
     dance: [
       ["  ▘ ▄██████▄ ▝  ",
        "   █ ●    ● █   ",
-       "   █   ◡    █   ",
+       "   █ · ◡  · █   ",
        "    ▀██████▀    "],
       ["    ▄██████▄    ",
        "  ▗█ ●    ● █▖  ",
-       "   █   ◡    █   ",
+       "   █ · ◡  · █   ",
        "    ▀██████▀    "],
     ],
     sulk: [
@@ -199,36 +209,46 @@ const N: Record<Stage, Partial<Record<Mood, [Sprite, Sprite]>>> = {
        "  ▐█   ∩    █▌  ",
        "    ▀██████▀    "],
     ],
+    worry: [
+      ["    ▄██████▄ '  ",
+       "   █ ●    ● █   ",
+       "  ▐█   ~    █▌  ",
+       "    ▀██████▀    "],
+      ["    ▄██████▄    ",
+       "   █ ●    ● █'  ",
+       "  ▐█   ~    █▌  ",
+       "    ▀██████▀    "],
+    ],
   },
   elder: {
     idle: [
       ["    ▄█▀██▀█▄    ",
        "   █ ●    ● █   ",
-       "  ▐█   ◡    █▌  ",
+       "  ▐█ · ◡  · █▌  ",
        "    ▀█▒▒▒▒█▀    "],
       ["    ▄█▀██▀█▄    ",
        "   █ ─    ─ █   ",
-       "  ▐█   ◡    █▌  ",
+       "  ▐█ · ◡  · █▌  ",
        "    ▀█▒▒▒▒█▀    "],
     ],
     hop: [
       ["   █ ●    ● █   ",
-       "  ▐█   ◡    █▌  ",
+       "  ▐█ · ◡  · █▌  ",
        "    ▀█▒▒▒▒█▀    ",
        "                "],
       ["    ▄█▀██▀█▄    ",
        "   █ ●    ● █   ",
-       "  ▐█   ◡    █▌  ",
+       "  ▐█ · ◡  · █▌  ",
        "    ▀█▒▒▒▒█▀    "],
     ],
     dance: [
       ["  ▘ ▄█▀██▀█▄ ▝  ",
        "   █ ●    ● █   ",
-       "   █   ◡    █   ",
+       "   █ · ◡  · █   ",
        "    ▀█▒▒▒▒█▀    "],
       ["    ▄█▀██▀█▄    ",
        "  ▗█ ●    ● █▖  ",
-       "   █   ◡    █   ",
+       "   █ · ◡  · █   ",
        "    ▀█▒▒▒▒█▀    "],
     ],
     sulk: [
@@ -271,6 +291,16 @@ const N: Record<Stage, Partial<Record<Mood, [Sprite, Sprite]>>> = {
        "  ▐█   ∩    █▌  ",
        "    ▀█▒▒▒▒█▀    "],
     ],
+    worry: [
+      ["    ▄█▀██▀█▄ '  ",
+       "   █ ●    ● █   ",
+       "  ▐█   ~    █▌  ",
+       "    ▀█▒▒▒▒█▀    "],
+      ["    ▄█▀██▀█▄    ",
+       "   █ ●    ● █'  ",
+       "  ▐█   ~    █▌  ",
+       "    ▀█▒▒▒▒█▀    "],
+    ],
   },
 };
 
@@ -290,6 +320,7 @@ const S: Record<Stage, Partial<Record<Mood, [Sprite, Sprite]>>> = {
     dance: [["▘▄████▄▝", "█ ●◡● █ "], ["█ ●◡● █ ", " ▀████▀ "]],
     sulk: [[" ▄████▄ ", "█ ╥∩╥'█ "], [" ▄████▄ ", "█'╥∩╥ █ "]],
     yawn: [[" ▄████▄ ", "█ ─○─ █ "], [" ▄████▄ ", "█ ─◡─ █ "]],
+    worry: [[" ▄████▄'", "█ ●~● █ "], [" ▄████▄ ", "█ ●~● █'"]],
   },
   adult: {}, // small: hatchling art, stage colour
   elder: {},
@@ -318,7 +349,7 @@ export function cells(rows: Sprite, stage: Stage, mood: Mood): string {
   const out: Cell[] = [];
   for (const row of rows) for (const ch of row) {
     const cp = ch.codePointAt(0)!;
-    out.push([cp, BLOCKS.has(ch) ? body : ch === "z" || ch === "Z" ? Z_COLOR : ch === "'" ? TEAR : EYE]);
+    out.push([cp, BLOCKS.has(ch) ? body : ch === "z" || ch === "Z" ? Z_COLOR : ch === "'" ? TEAR : ch === "·" ? CHEEK : EYE]);
   }
   return pack(out);
 }

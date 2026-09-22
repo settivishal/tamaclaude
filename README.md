@@ -4,8 +4,8 @@ A pixel pet that lives above the Claude Code prompt. It hatches, blinks, hops wh
 
 ```
      ▄████▄
-    █ ●  ● █      Pip · hatchling · content · streak 7   9: feed
-    █  ◡   █
+    █ ●  ● █      “ooh, an edit!”
+    █ ·◡ · █      Pip · hatchling · excited · streak 7   8: pet  9: feed
      ▀████▀
 ```
 
@@ -32,15 +32,15 @@ It grows on a streak of clean turns (no abort, no refusal, no error). A stage on
 ```
 egg                 hatchling           adult               elder
       ▄████▄             ▄████▄            ▄██████▄            ▄█▀██▀█▄
-     ██████████         █ ●  ● █          █ ●    ● █          █ ●    ● █
-     ██████████         █  ◡   █         ▐█   ◡    █▌        ▐█   ◡    █▌
+     ██▒███████         █ ●  ● █          █ ●    ● █          █ ●    ● █
+     ██████▒███         █ ·◡ · █         ▐█ · ◡  · █▌        ▐█ · ◡  · █▌
       ▀██████▀           ▀████▀            ▀██████▀            ▀█▒▒▒▒█▀
 
-asleep              hungry              sulking             dancing
-     ▄████▄  z           ▄████▄              ▄████▄            ▘▄████▄▝
-    █ ─  ─ █            █ ●  ● █            █ ╥  ╥ █           █ ●  ● █
-    █  ◡   █            █  ∩   █            █ ' ∩  █           █  ◡   █
-     ▀████▀              ▀████▀              ▀████▀             ▀████▀
+asleep              hungry              sulking             dancing             worried
+     ▄████▄  z           ▄████▄              ▄████▄            ▘▄████▄▝            ▄████▄  '
+    █ ─  ─ █            █ ●  ● █            █ ╥  ╥ █           █ ●  ● █           █ ●  ● █
+    █ ·◡ · █            █  ∩   █            █ ' ∩  █           █ ·◡ · █           █  ~   █
+     ▀████▀              ▀████▀              ▀████▀             ▀████▀             ▀████▀
 ```
 
 `small` (8×2) draws the hatchling art for every stage, told apart by colour.
@@ -53,9 +53,11 @@ asleep              hungry              sulking             dancing
 - a streak of clean turns → it grows (see stages); an aborted, errored or refused turn resets the streak, never the stage
 - no turn for 10 min (`Sleep after` setting) → sleeps; z's drift up; any prompt wakes it
 - a session past 2 h → yawns every few minutes
+- context 85 % full → sweats and says so
 - unfed for 24 h → droopy. It never dies. Press `9` with an empty prompt, or `/tamaclaude feed`
 - `8` pets it → a dance (a hop under `quiet`); praise in a prompt (thanks, good job, well done) → a dance too
-- hover the pet for a word from it and its stats: sessions, edits witnessed, tests seen, sulks
+- it talks: a line above its name for each mood, a word when fed, petted or praised, and some idle chatter every 5 min (`quiet` mutes the chatter)
+- hover the pet for its stats: sessions, edits witnessed, tests seen, sulks
 
 ## Commands
 
@@ -73,7 +75,7 @@ asleep              hungry              sulking             dancing
 | `enabled` | `true` | off hides the pet |
 | `size` | `normal` | `small` is 8×2, `normal` 16×4 |
 | `sleepAfterMin` | `10` | minutes idle before sleep |
-| `quiet` | `false` | no dance or yawn; only idle, hop and sleep |
+| `quiet` | `false` | no dance, yawn or idle chatter |
 
 The pet is stored in the plugin's store, so it follows you across sessions and repos.
 

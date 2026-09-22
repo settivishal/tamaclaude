@@ -1,6 +1,6 @@
 import type { EngineInterface, Register } from "claude-code";
 import { sprite, cells, DIMS, type Size, type Mood } from "./sprites.ts";
-import { hatch, load, grow, isHungry, mood, ageDays, EFFECT_MS, PRAISE, type Pet, type Effects } from "./pet.ts";
+import { hatch, load, grow, isHungry, mood, ageDays, EFFECT_MS, PRAISE, QUIP, CHATTER, CHATTER_EVERY_MS, SAY_MS, WORRY_PERCENT, type Pet, type Effects } from "./pet.ts";
 
 type Cfg = { enabled: boolean; size: Size; sleepAfterMs: number; quiet: boolean };
 const cfg: Cfg = { enabled: true, size: "normal", sleepAfterMs: 600_000, quiet: false };
@@ -14,20 +14,32 @@ let drawnMood: Mood = "idle";
 let sessionStart = 0;
 let lastYawn = 0;
 let testsPassed = false; // a test run this turn came back clean
+let ctxPercent = 0; // context fill from session.measure
+let said = { text: "", until: 0 }; // a line it spoke, over its quip
+let drawnLine = "";
+let lastChatter = 0;
 
 const TEST_RUNNER = /\b(pytest|jest|vitest|mocha|cargo test|go test|npm test|pnpm test|yarn test|bun test|tsx .*\.test\.|node --test|rspec|phpunit|mvn test|gradle test|dotnet test|make test)\b/;
 const TEST_FAIL = /\bFAIL(ED|URE)?\b|\berror\b/i;
 const LONG_SESSION_MS = 2 * 60 * 60 * 1000, YAWN_EVERY_MS = 4 * 60 * 1000;
 
-const MOOD_LABEL: Record<Mood, string> = { idle: "content", hop: "excited", dance: "dancing", sulk: "sulking", sleep: "asleep", yawn: "yawning", hungry: "hungry" };
-const QUIP: Record<Mood, string> = { idle: "hi.", hop: "ooh, an edit!", dance: "tests pass!", sulk: "...", sleep: "zzz", yawn: "long day?", hungry: "feed me?" };
+const MOOD_LABEL: Record<Mood, string> = { idle: "content", hop: "excited", dance: "dancing", sulk: "sulking", sleep: "asleep", yawn: "yawning", hungry: "hungry", worry: "worried" };
 
 async function save($: EngineInterface): Promise<void> {
   await $.store.set("pet", pet);
 }
 
 function currentMood(now: number): Mood {
-  return mood({ effects, lastTurn, sleepAfterMs: cfg.sleepAfterMs, hungry: isHungry(pet, now), quiet: cfg.quiet }, now);
+  return mood({ effects, lastTurn, sleepAfterMs: cfg.sleepAfterMs, hungry: isHungry(pet, now), quiet: cfg.quiet, worried: ctxPercent >= WORRY_PERCENT }, now);
+}
+
+// the speech line: something it said recently, else the mood's quip
+function line(m: Mood, now: number): string {
+  return said.until > now ? said.text : QUIP[m];
+}
+
+function say(text: string, now: number): void {
+  said = { text, until: now + SAY_MS };
 }
 
 function frame(m: Mood, t: number): string {
@@ -41,7 +53,9 @@ function poke(k: keyof Effects, now: number): void {
 }
 
 async function feed($: EngineInterface): Promise<string> {
-  pet = { ...pet, fed: await $.clock.now() };
+  const now = await $.clock.now();
+  pet = { ...pet, fed: now };
+  say("yum!", now);
   await save($);
   $.ui.invalidate("ui.render");
   return `${pet.name} munches happily.`;
@@ -49,7 +63,9 @@ async function feed($: EngineInterface): Promise<string> {
 
 // a pat cheers it up; quiet mode has no dance, so it hops
 async function pat($: EngineInterface): Promise<void> {
-  poke(cfg.quiet ? "hop" : "dance", await $.clock.now());
+  const now = await $.clock.now();
+  poke(cfg.quiet ? "hop" : "dance", now);
+  say("hehe.", now);
 }
 
 async function sulk($: EngineInterface, now: number): Promise<void> {
@@ -63,7 +79,9 @@ async function step($: EngineInterface): Promise<void> {
   if (now - sessionStart >= LONG_SESSION_MS && now - lastYawn >= YAWN_EVERY_MS) { lastYawn = now; poke("yawn", now); }
   const m = currentMood(now);
   tick++;
-  if (m !== drawnMood) { drawnMood = m; $.ui.invalidate("ui.render"); return; } // text line changes with the mood
+  if (m === "idle" && !cfg.quiet && now - lastChatter >= CHATTER_EVERY_MS) { lastChatter = now; say(CHATTER[Math.floor(Math.random() * CHATTER.length)]!, now); }
+  const l = line(m, now);
+  if (m !== drawnMood || l !== drawnLine) { drawnMood = m; drawnLine = l; $.ui.invalidate("ui.render"); return; } // text lines change with the mood
   if (bandId) void $.ui.blit({ requestId: bandId, key: "pet", cells: frame(m, tick) });
 }
 
@@ -100,7 +118,7 @@ export const register: Register = (on, options) => {
     const now = await $.clock.now();
     pet = load(await $.store.get("pet"), now);
     pet = { ...pet, sessions: pet.sessions + 1 };
-    lastTurn = sessionStart = lastYawn = now;
+    lastTurn = sessionStart = lastYawn = lastChatter = now;
     await save($);
     await $.command.register({ name: "tamaclaude", description: "Your pixel pet: status, feed, name <x>, reset.", argumentHint: "[feed|name <x>|reset]" });
     if (cfg.enabled) $.clock.every(250, () => void step($));
@@ -111,7 +129,7 @@ export const register: Register = (on, options) => {
 
   on("prompt.submit", async ($, e, next) => {
     lastTurn = await $.clock.now();
-    if (PRAISE.test(e.text)) poke("dance", lastTurn);
+    if (PRAISE.test(e.text)) { poke("dance", lastTurn); say("aw, thanks!", lastTurn); }
     return next(e);
   });
   on("turn.complete", async ($, e, next) => {
@@ -127,6 +145,8 @@ export const register: Register = (on, options) => {
     $.ui.invalidate("ui.render"); // streak shows on the text line
     return next(e);
   });
+
+  on("session.measure", ($, e, next) => { ctxPercent = e.context.percent ?? 0; return next(e); });
 
   on("tool.call", async ($, e, next) => {
     const now = await $.clock.now();
@@ -154,6 +174,7 @@ export const register: Register = (on, options) => {
       <Box key="tama" flexDirection="column">
         <Box gap={1} justifyContent="flex-end">
           <Box flexDirection="column" justifyContent="flex-end">
+            {drawnLine && <Text wrap="truncate">{`“${drawnLine}”`}</Text>}
             <Box gap={1}>
               <Text dimColor wrap="truncate">{`${pet.name} · ${pet.stage} · ${MOOD_LABEL[m]} · streak ${pet.streak}`}</Text>
               <Button key="pat" plain dimColor hotkey="8" onPress={() => void pat($)}>pet</Button>
@@ -163,7 +184,7 @@ export const register: Register = (on, options) => {
           <Raster key="pet" columns={columns} rows={rows} cells={frame(m, tick)} />
         </Box>
         <Box display="none" hover={{ display: "flex" }} justifyContent="flex-end" paddingRight={columns + 1}>
-          <Text dimColor wrap="truncate">{`${pet.name}: ${QUIP[m]} · ${pet.sessions} sessions · ${pet.edits} edits · ${pet.tests} tests · ${pet.sulks} sulks · /tamaclaude`}</Text>
+          <Text dimColor wrap="truncate">{`${pet.sessions} sessions · ${pet.edits} edits · ${pet.tests} tests · ${pet.sulks} sulks · /tamaclaude`}</Text>
         </Box>
         {below}
       </Box>
