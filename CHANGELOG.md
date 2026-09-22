@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0 — 2026-09-21
+- warns once when a rate-limit window passes 90%
+- a word when a turn is aborted, errors, runs 5 min or makes 8+ edits
+
 ## 0.4.0 — 2026-09-21
 - worries at 85% context: sweat, wavy mouth, says so
 - it talks: a line above its name per mood, on feed/pet/praise, idle chatter every 5 min (quiet mutes)
