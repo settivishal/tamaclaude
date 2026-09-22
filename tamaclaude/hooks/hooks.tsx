@@ -23,6 +23,7 @@ let lastChatter = 0;
 
 const TEST_RUNNER = /\b(pytest|jest|vitest|mocha|cargo test|go test|npm test|pnpm test|yarn test|bun test|tsx .*\.test\.|node --test|rspec|phpunit|mvn test|gradle test|dotnet test|make test)\b/;
 const TEST_FAIL = /\bFAIL(ED|URE)?\b|\berror\b/i;
+const GIT_SHIP = /\bgit\s+(commit|push)\b|\bgh\s+pr\s+(create|merge)\b/;
 const LONG_SESSION_MS = 2 * 60 * 60 * 1000, YAWN_EVERY_MS = 4 * 60 * 1000;
 
 const MOOD_LABEL: Record<Mood, string> = { idle: "content", hop: "excited", dance: "dancing", sulk: "sulking", sleep: "asleep", yawn: "yawning", hungry: "hungry", worry: "worried" };
@@ -166,6 +167,7 @@ export const register: Register = (on, options) => {
     if (isTest) pet = { ...pet, tests: pet.tests + 1 };
     const r = await next(e);
     if (r.deny !== undefined) await sulk($, await $.clock.now()); // a plugin beneath refused it
+    else if (e.tool === "Bash" && GIT_SHIP.test(e.command) && !r.isError) say("shipped!", await $.clock.now());
     else if (isTest) {
       if (r.isError || TEST_FAIL.test(r.text ?? "")) await sulk($, await $.clock.now());
       else testsPassed = true;

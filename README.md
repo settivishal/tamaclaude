@@ -49,6 +49,7 @@ asleep              hungry              sulking             dancing             
 
 - `Write` / `Edit` → hops for 1.5 s (the egg too)
 - a test runner in `Bash` (pytest, jest, vitest, cargo test, go test, npm test, …) that comes back clean → a happy dance when the turn ends; `FAIL` / `error` in its output → sulks
+- `git commit`, `git push`, `gh pr create|merge` in `Bash` that comes back clean → "shipped!"
 - a tool call another plugin denies, or a turn that ends in a refusal → sulks 30 s
 - a streak of clean turns → it grows (see stages); an aborted, errored or refused turn resets the streak, never the stage
 - no turn for 10 min (`Sleep after` setting) → sleeps; z's drift up; any prompt wakes it
