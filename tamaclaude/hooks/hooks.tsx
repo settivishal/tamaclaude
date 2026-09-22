@@ -1,6 +1,6 @@
 import type { EngineInterface, Register } from "claude-code";
 import { sprite, cells, DIMS, type Size, type Mood } from "./sprites.ts";
-import { hatch, load, grow, isHungry, mood, ageDays, EFFECT_MS, type Pet, type Effects } from "./pet.ts";
+import { hatch, load, grow, isHungry, mood, ageDays, EFFECT_MS, PRAISE, type Pet, type Effects } from "./pet.ts";
 
 type Cfg = { enabled: boolean; size: Size; sleepAfterMs: number; quiet: boolean };
 const cfg: Cfg = { enabled: true, size: "normal", sleepAfterMs: 600_000, quiet: false };
@@ -20,6 +20,7 @@ const TEST_FAIL = /\bFAIL(ED|URE)?\b|\berror\b/i;
 const LONG_SESSION_MS = 2 * 60 * 60 * 1000, YAWN_EVERY_MS = 4 * 60 * 1000;
 
 const MOOD_LABEL: Record<Mood, string> = { idle: "content", hop: "excited", dance: "dancing", sulk: "sulking", sleep: "asleep", yawn: "yawning", hungry: "hungry" };
+const QUIP: Record<Mood, string> = { idle: "hi.", hop: "ooh, an edit!", dance: "tests pass!", sulk: "...", sleep: "zzz", yawn: "long day?", hungry: "feed me?" };
 
 async function save($: EngineInterface): Promise<void> {
   await $.store.set("pet", pet);
@@ -44,6 +45,11 @@ async function feed($: EngineInterface): Promise<string> {
   await save($);
   $.ui.invalidate("ui.render");
   return `${pet.name} munches happily.`;
+}
+
+// a pat cheers it up; quiet mode has no dance, so it hops
+async function pat($: EngineInterface): Promise<void> {
+  poke(cfg.quiet ? "hop" : "dance", await $.clock.now());
 }
 
 async function sulk($: EngineInterface, now: number): Promise<void> {
@@ -103,7 +109,11 @@ export const register: Register = (on, options) => {
 
   on("command.run", { command: "tamaclaude" }, async ($, e) => ({ text: await command($, e.args) }));
 
-  on("prompt.submit", async ($, e, next) => { lastTurn = await $.clock.now(); return next(e); });
+  on("prompt.submit", async ($, e, next) => {
+    lastTurn = await $.clock.now();
+    if (PRAISE.test(e.text)) poke("dance", lastTurn);
+    return next(e);
+  });
   on("turn.complete", async ($, e, next) => {
     const now = lastTurn = await $.clock.now();
     if (e.agentId) return next(e); // subagent turns do not count
@@ -146,13 +156,14 @@ export const register: Register = (on, options) => {
           <Box flexDirection="column" justifyContent="flex-end">
             <Box gap={1}>
               <Text dimColor wrap="truncate">{`${pet.name} · ${pet.stage} · ${MOOD_LABEL[m]} · streak ${pet.streak}`}</Text>
+              <Button key="pat" plain dimColor hotkey="8" onPress={() => void pat($)}>pet</Button>
               <Button key="feed" plain dimColor={!hungry} hotkey="9" onPress={() => void feed($)}>feed</Button>
             </Box>
           </Box>
           <Raster key="pet" columns={columns} rows={rows} cells={frame(m, tick)} />
         </Box>
         <Box display="none" hover={{ display: "flex" }} justifyContent="flex-end" paddingRight={columns + 1}>
-          <Text dimColor wrap="truncate">{`${pet.sessions} sessions · ${pet.edits} edits · ${pet.tests} tests · ${pet.sulks} sulks · /tamaclaude`}</Text>
+          <Text dimColor wrap="truncate">{`${pet.name}: ${QUIP[m]} · ${pet.sessions} sessions · ${pet.edits} edits · ${pet.tests} tests · ${pet.sulks} sulks · /tamaclaude`}</Text>
         </Box>
         {below}
       </Box>

@@ -1,4 +1,4 @@
-import { hatch, load, grow, mood, isHungry, THRESHOLDS, HUNGRY_MS, type Pet } from "../hooks/pet.ts";
+import { hatch, load, grow, mood, isHungry, THRESHOLDS, HUNGRY_MS, PRAISE, type Pet } from "../hooks/pet.ts";
 const eq = (got: unknown, want: unknown, what: string) => {
   if (JSON.stringify(got) !== JSON.stringify(want)) throw new Error(`${what}\n got  ${JSON.stringify(got)}\n want ${JSON.stringify(want)}`);
 };
@@ -42,3 +42,7 @@ for (const [fx, since, hungry, quiet, want] of rows) {
   eq(mood({ effects, lastTurn: T0, sleepAfterMs: SLEEP, hungry, quiet }, now), want, `mood ${JSON.stringify(fx)} since=${since} hungry=${hungry} quiet=${quiet}`);
 }
 console.log("ok pet");
+
+// praise
+eq(PRAISE.test("thanks, good job"), true, "praise matches");
+eq(PRAISE.test("fix the thanksgiving bug"), false, "no praise in a word");

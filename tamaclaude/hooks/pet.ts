@@ -61,4 +61,7 @@ export function mood(m: MoodInput, now: number): Mood {
   return "idle";
 }
 
+// praise in a prompt: the pet dances
+export const PRAISE = /\b(thanks|thank you|good (job|work|bo[yt])|well done|nice work|great work|love (you|it))\b/i;
+
 export const ageDays = (pet: Pet, now: number) => Math.floor((now - pet.born) / 86_400_000);

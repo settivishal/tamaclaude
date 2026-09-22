@@ -54,7 +54,8 @@ asleep              hungry              sulking             dancing
 - no turn for 10 min (`Sleep after` setting) → sleeps; z's drift up; any prompt wakes it
 - a session past 2 h → yawns every few minutes
 - unfed for 24 h → droopy. It never dies. Press `9` with an empty prompt, or `/tamaclaude feed`
-- hover the pet for its stats: sessions, edits witnessed, tests seen, sulks
+- `8` pets it → a dance (a hop under `quiet`); praise in a prompt (thanks, good job, well done) → a dance too
+- hover the pet for a word from it and its stats: sessions, edits witnessed, tests seen, sulks
 
 ## Commands
 
