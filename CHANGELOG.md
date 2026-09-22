@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.2 — 2026-09-21
+- memoize packed frames; blit only when the frame changes
+
 ## 0.5.1 — 2026-09-21
 - says shipped! on a clean git commit/push or gh pr create/merge
 - fix: reset clears the speech line
