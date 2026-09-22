@@ -20,6 +20,8 @@ let turnEdits = 0; // Write/Edit calls this turn
 let said = { text: "", until: 0 }; // a line it spoke, over its quip
 let drawnLine = "";
 let lastChatter = 0;
+let blitted = ""; // the cells last sent to the band, so an unchanged frame is not re-sent
+const packed = new Map<string, string>(); // size/stage/mood/frame → cells
 
 const TEST_RUNNER = /\b(pytest|jest|vitest|mocha|cargo test|go test|npm test|pnpm test|yarn test|bun test|tsx .*\.test\.|node --test|rspec|phpunit|mvn test|gradle test|dotnet test|make test)\b/;
 const TEST_FAIL = /\bFAIL(ED|URE)?\b|\berror\b/i;
@@ -48,7 +50,10 @@ function say(text: string, now: number, ms = SAY_MS): void {
 function frame(m: Mood, t: number): string {
   // idle blinks briefly every 3 s; the other moods alternate every other tick
   const f = m === "idle" ? (t % 12 === 11 ? 1 : 0) : (t >> 1) & 1;
-  return cells(sprite(cfg.size, pet.stage, m, f), pet.stage, m);
+  const k = `${cfg.size}/${pet.stage}/${m}/${f}`;
+  let c = packed.get(k);
+  if (!c) packed.set(k, c = cells(sprite(cfg.size, pet.stage, m, f), pet.stage, m));
+  return c;
 }
 
 function poke(k: keyof Effects, now: number): void {
@@ -85,7 +90,8 @@ async function step($: EngineInterface): Promise<void> {
   if (m === "idle" && !cfg.quiet && now - lastChatter >= CHATTER_EVERY_MS) { lastChatter = now; say(CHATTER[Math.floor(Math.random() * CHATTER.length)]!, now); }
   const l = line(m, now);
   if (m !== drawnMood || l !== drawnLine) { drawnMood = m; drawnLine = l; $.ui.invalidate("ui.render"); return; } // text lines change with the mood
-  if (bandId) void $.ui.blit({ requestId: bandId, key: "pet", cells: frame(m, tick) });
+  const c = frame(m, tick);
+  if (bandId && c !== blitted) { blitted = c; void $.ui.blit({ requestId: bandId, key: "pet", cells: c }); }
 }
 
 async function command($: EngineInterface, args: string): Promise<string> {
@@ -182,6 +188,7 @@ export const register: Register = (on, options) => {
     const { Box, Text, Button, Raster } = $.ui.resolve(e);
     const below = await next(e); // the other plugins' band rows stack under the pet
     bandId = e.requestId;
+    blitted = "";
     const m = drawnMood;
     const { columns, rows } = DIMS[cfg.size];
     const hungry = m === "hungry";
