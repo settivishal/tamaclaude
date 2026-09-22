@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 — 2026-09-21
+- worries at 85% context: sweat, wavy mouth, says so
+- it talks: a line above its name per mood, on feed/pet/praise, idle chatter every 5 min (quiet mutes)
+- art: pink cheeks, egg speckles
+
 ## 0.3.0 — 2026-09-21
 - 8 pets it: a dance (a hop under quiet)
 - praise in a prompt (thanks, good job, well done) makes it dance
