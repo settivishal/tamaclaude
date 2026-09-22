@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0 — 2026-09-21
+- 8 pets it: a dance (a hop under quiet)
+- praise in a prompt (thanks, good job, well done) makes it dance
+- hover line opens with a word from the pet for its mood
+
 ## 0.2.4 — 2026-09-21
 - hop lasts 1.5 s so you can see it
 
